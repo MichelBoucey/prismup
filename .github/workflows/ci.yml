@@ -87,9 +87,6 @@ jobs:
       - name: Installation of Just
         uses: extractions/setup-just@v3
 
-      - name: Install z3
-        run: brew install z3
-
       - name: Build of PrismUp
         run: just build
 
@@ -98,12 +95,6 @@ jobs:
 
       - name: Run Prism compiler
         run: ~/.prismup/bin/prism --version
-
-      - name: Install a specific version of Prism
-        run: target/debug/prismup --install 0.10.0
-
-      - name: Run the Prism compiler just added
-        run: ~/.prismup/bin/prism-0.10.0 --version
 
       - name: Show Prism versions status
         run: target/debug/prismup --versions-list
