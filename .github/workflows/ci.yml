@@ -1,0 +1,110 @@
+name: PrismUp CI
+
+on: [push, pull_request]
+
+jobs:
+  on-linux-x86-64:
+
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Unix details
+        run: uname -a
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Installation of Just
+        uses: extractions/setup-just@v3
+
+      - name: Build of PrismUp
+        run: just build
+
+      - name: First run
+        run: target/debug/prismup
+
+      - name: Run Prism compiler
+        run: ~/.prismup/bin/prism --version
+
+      - name: Install a specific version of Prism
+        run: target/debug/prismup --install 0.10.0
+
+      - name: Run the Prism compiler just added
+        run: ~/.prismup/bin/prism-0.10.0 --version
+
+      - name: Show Prism versions status
+        run: target/debug/prismup --versions-list
+
+  on-linux-arm:
+
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Unix details
+        run: uname -a
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Installation of Just
+        uses: extractions/setup-just@v3
+
+      - name: Build of PrismUp
+        run: just build
+
+      - name: First run
+        run: target/debug/prismup
+
+      - name: Run Prism compiler
+        run: ~/.prismup/bin/prism --version
+
+      - name: Install a specific version of Prism
+        run: target/debug/prismup --install 0.10.0
+
+      - name: Run the Prism compiler just added
+        run: ~/.prismup/bin/prism-0.10.0 --version
+
+      - name: Show Prism versions status
+        run: target/debug/prismup --versions-list
+
+  on-macos:
+
+    runs-on: macos-latest
+    steps:
+      - name: Unix details
+        run: uname -a
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Installation of Just
+        uses: extractions/setup-just@v3
+
+      - name: Install z3
+        run: brew install z3
+
+      - name: Build of PrismUp
+        run: just build
+
+      - name: First run
+        run: target/debug/prismup
+
+      - name: Run Prism compiler
+        run: ~/.prismup/bin/prism --version
+
+      - name: Install a specific version of Prism
+        run: target/debug/prismup --install 0.10.0
+
+      - name: Run the Prism compiler just added
+        run: ~/.prismup/bin/prism-0.10.0 --version
+
+      - name: Show Prism versions status
+        run: target/debug/prismup --versions-list
+
