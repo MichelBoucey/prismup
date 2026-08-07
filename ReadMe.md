@@ -6,19 +6,19 @@
 
 `PrismUp` targets Unix-like OS.
 
-## Dependencies
+## 2. Dependencies
 
-`Prism`, as compiler, needs `LLVM/Clang` to be installed on your system (and for `Prism` < 0.17.0 on `macOS` needs `z3` library to be installed). See the [README](https://github.com/sdiehl/prism/blob/main/README.md) of the project.
+`Prism`, as compiler, needs `LLVM/Clang` to run on your system (on `macOS`, `Prism` < 0.17.0 needs `z3` library to be installed). See the [README](https://github.com/sdiehl/prism/blob/main/README.md) of the project.
 
-## 2. Installation of PrismUp
+## 3. Installation of PrismUp
 
-### 2.1. From crates.io
+### 3.1. From crates.io
 
 ```
 cargo install prismup
 ```
 
-### 2.2. From sources
+### 3.2. From sources
 
 ```
 just install
@@ -26,7 +26,7 @@ just install
 
 Install `prismup` to `~/.cargo/bin/`. Add this `bin/` directory to your `PATH` if it's not already done.
 
-## 3. Initial installation of Prism
+## 4. Initial installation of Prism
 
 At its first run, `PrismUp` installs `Prism` in its latest version.
 
@@ -37,11 +37,11 @@ Installation of the latest Prism compiler (0.16.0).
 Please add '$HOME/.prismup/bin/' to your PATH.
 ```
 
-## 4. Usage
+## 5. Usage
 
 ```
 user@box $ prismup -h
-An installer/updater for the Prism language
+A CLI tool to install and manage versions of the Prism language.
 
 Usage: prismup [OPTIONS]
 
