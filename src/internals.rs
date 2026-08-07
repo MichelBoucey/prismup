@@ -71,9 +71,10 @@ pub async fn install_prism_upgrade(
     let prism_installed_version =
         get_prism_installed_versions(&(home_dir.to_owned() + ".prismup/prism/"));
     let latest_prism_version_to_install = available_prism_versions.last().unwrap();
-    if prism_installed_version.is_none() || !prism_installed_version
-        .unwrap()
-        .contains(latest_prism_version_to_install)
+    if prism_installed_version.is_none()
+        || !prism_installed_version
+            .unwrap()
+            .contains(latest_prism_version_to_install)
     {
         println!(
             "Installation of the latest Prism compiler ({}).",
@@ -96,7 +97,10 @@ pub async fn install_prism_upgrade(
             "The latest Prism version {} is already installed.",
             latest_prism_version_to_install
         );
-        println!("Set Prism version {} as your current Prism compiler.", latest_prism_version_to_install);
+        println!(
+            "Set Prism version {} as your current Prism compiler.",
+            latest_prism_version_to_install
+        );
         set_current_prism_version(
             &(home_dir.to_owned() + ".prismup/"),
             latest_prism_version_to_install,

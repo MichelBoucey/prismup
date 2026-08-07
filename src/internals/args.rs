@@ -1,9 +1,9 @@
 use clap::{Arg, ArgAction, Command};
 
 pub fn cli() -> Command {
-    Command::new("prism")
+    Command::new("prismup")
         .author("Michel Boucey, michel.boucey@gmail.com")
-        .about("An installer/updater for the Prism language")
+        .about("A CLI tool to install and manage versions of the Prism language.")
         .arg_required_else_help(false)
         .arg(
             Arg::new("version")
