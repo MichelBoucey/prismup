@@ -44,12 +44,24 @@ pub fn set_current_prism_version(
     prismup_root_dir: &str,
     version: &Version,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let prism_symlink = format!("{}bin/prism", prismup_root_dir);
-    let target = format!("{}prism/{}/prism", prismup_root_dir, version);
-    let path = Path::new(&target);
-    if path.exists() {
-        let _ = remove_file(&prism_symlink);
-        symlink(target, prism_symlink)?;
+    let current_prism_version = get_current_prism_version(prismup_root_dir);
+    if current_prism_version.is_some() && current_prism_version.unwrap() == *version {
+        println!(
+            "Prism version {} is already set as your current Prism compiler.",
+            version
+        );
+    } else {
+        let prism_symlink = format!("{}bin/prism", prismup_root_dir);
+        let target = format!("{}prism/{}/prism", prismup_root_dir, version);
+        let path = Path::new(&target);
+        if path.exists() {
+            let _ = remove_file(&prism_symlink);
+            symlink(target, prism_symlink)?;
+            println!(
+                "Set Prism version {} as your current Prism compiler.",
+                version
+            );
+        }
     }
     Ok(())
 }
@@ -95,10 +107,6 @@ pub async fn install_prism_upgrade(
     } else {
         println!(
             "The latest Prism version {} is already installed.",
-            latest_prism_version_to_install
-        );
-        println!(
-            "Set Prism version {} as your current Prism compiler.",
             latest_prism_version_to_install
         );
         set_current_prism_version(
