@@ -14,6 +14,7 @@ pub mod versions;
 use crate::get_available_prism_versions;
 use crate::get_prism_installed_versions;
 use crate::to_semver;
+use std::fs::exists;
 
 pub fn prism_version_remove(
     prismup_root_dir: &str,
@@ -55,7 +56,9 @@ pub fn set_current_prism_version(
         let target = format!("{}prism/{}/prism", prismup_root_dir, version);
         let path = Path::new(&target);
         if path.exists() {
-            remove_file(&prism_symlink)?;
+            if exists(&prism_symlink)? {
+                remove_file(&prism_symlink)?;
+            }
             symlink(target, prism_symlink)?;
             println!(
                 "Set Prism version {} as your current Prism compiler.",
