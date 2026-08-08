@@ -9,7 +9,7 @@ lint:
 fmt:
     just --fmt
     cargo fmt
-    dumber -w ReadMe.md
+    dumber -w README.md
 
 watch:
     bacon
