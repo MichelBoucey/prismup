@@ -46,13 +46,13 @@ A CLI tool to install and manage versions of the Prism language.
 Usage: prismup [OPTIONS]
 
 Options:
-  -v, --version                  Print PrismUp version
-  -c, --current-version          Print the current Prism version
-  -u, --upgrade                  Install and set the latest Prism version
-  -l, --versions-list            Show list of available Prism versions
-  -i, --install <SEMVER>         Install Prism in the given version
-  -s, --set <SEMVER>             Set the current Prism to the given version
-  -r, --remove-version <SEMVER>  Remove the given Prism version
-  -h, --help                     Print help
+  -v, --version                   Print PrismUp version
+  -c, --current-version           Print the current Prism version
+  -u, --upgrade                   Install and set the latest Prism version
+  -l, --versions-list             Show list of available Prism versions
+  -i, --install-version <SEMVER>  Install Prism in the given version
+  -s, --set-version <SEMVER>      Set the current Prism to the given version
+  -r, --remove-version <SEMVER>   Remove the given Prism version
+  -h, --help                      Print help
 ```
 
