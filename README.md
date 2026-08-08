@@ -37,6 +37,8 @@ Installation of the latest Prism compiler (0.16.0).
 Please add '$HOME/.prismup/bin/' to your PATH.
 ```
 
+To always get and use the latest `Prism` release and set it as your current `Prism` compiler, just run `prismup --upgrade`.
+
 ## 5. Usage
 
 ```
