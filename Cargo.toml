@@ -15,6 +15,7 @@ keywords = ["prism", "language", "cli"]
 semver = "1.0.28"
 regex = "1.13.0"
 tokio = { version = "1", features = ["full"] }
+exponential-backoff = "2.1.0"
 reqwest = { version = "0.13", features = ["blocking","json","stream"] }
 sha256 = "1.6.0"
 uzers = "0.12.2"

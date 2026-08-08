@@ -1,10 +1,11 @@
 use crate::types::Release;
+use exponential_backoff::Backoff;
 use futures_util::TryStreamExt;
 use reqwest::header::{HeaderMap, HeaderValue};
-use std::fs;
 use std::fs::{File, exists};
 use std::io::BufReader;
 use std::time::{Duration, SystemTime};
+use std::{fs, thread};
 
 pub static USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
@@ -29,6 +30,26 @@ pub async fn get_sha256(
     let sha256 = sha256.text().await?;
     let sha256 = &sha256[0..64];
     Ok("sha256:".to_owned() + sha256)
+}
+
+pub async fn download_backoff(
+    client: &reqwest::Client,
+    url: &str,
+    filepath: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let attempts = 5;
+    let min = Duration::from_millis(150);
+    let max = Duration::from_secs(20);
+    for duration in Backoff::new(attempts, min, max) {
+        match download(client, url, filepath).await {
+            Ok(()) => return Ok(()),
+            Err(e) => match duration {
+                Some(duration) => thread::sleep(duration),
+                None => return Err(e),
+            },
+        }
+    }
+    Ok(())
 }
 
 pub async fn download(
@@ -63,13 +84,13 @@ pub async fn get_prism_releases(
     let filepath = home_dir.to_owned() + ".cache/prismup/releases.json";
     let ttl = Duration::new(3600, 0);
     if !exists(&filepath).unwrap() {
-        download(client, releases_url, &filepath).await?;
+        download_backoff(client, releases_url, &filepath).await?;
     } else {
         let metadata = fs::metadata(&filepath)?;
         if let Ok(time) = metadata.modified()
             && SystemTime::now() > (time + ttl)
         {
-            download(client, releases_url, &filepath).await?;
+            download_backoff(client, releases_url, &filepath).await?;
         };
     }
     let file = File::open(filepath)?;

@@ -151,7 +151,7 @@ pub async fn install_prism_version(
         + &archive_filename;
     let download_filepath = download_dir + &archive_filename;
 
-    download(client, &archive_url, &download_filepath).await?;
+    download_backoff(client, &archive_url, &download_filepath).await?;
 
     let right_archive_sha256 = get_sha256(client, &(archive_url.clone() + ".sha256")).await;
 
