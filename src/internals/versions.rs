@@ -5,7 +5,9 @@ use semver::Version;
 use std::fs;
 
 pub fn get_versions_list(available_versions: &[Version], versions_installed: &[Version]) {
-    for version in VecVersion(available_versions.to_vec()).0.iter() {
+    let mut versions = available_versions.to_vec();
+    versions.reverse();
+    for version in VecVersion(versions).0.iter() {
         print!("Prism {}", version);
         if versions_installed.contains(version) {
             println!(" (is installed)");
