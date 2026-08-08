@@ -1,4 +1,4 @@
-# PrismUp
+# PrismUp [![CI](https://github.com/MichelBoucey/prismup/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MichelBoucey/prismup/actions/workflows/ci.yml)
 
 `PrismUp` is a CLI tool to install and manage versions of [Prism](https://github.com/sdiehl/prism), "an effect-typed functional language that compiles to native code through LLVM".
 
