@@ -36,7 +36,7 @@ pub fn cli() -> Command {
         .arg(
             Arg::new("install")
                 .short('i')
-                .long("install")
+                .long("install-version")
                 .required(false)
                 .action(clap::ArgAction::Set)
                 .value_name("SEMVER")
@@ -45,7 +45,7 @@ pub fn cli() -> Command {
         .arg(
             Arg::new("set")
                 .short('s')
-                .long("set")
+                .long("set-version")
                 .required(false)
                 .action(clap::ArgAction::Set)
                 .value_name("SEMVER")
