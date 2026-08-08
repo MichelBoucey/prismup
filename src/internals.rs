@@ -24,8 +24,8 @@ pub fn prism_version_remove(
         println!("Prism version {} is your current Prism compiler.", version);
         println!("Please set another Prism version before removing this one.");
     } else {
-        let _ = remove_file(prismup_root_dir.to_owned() + "bin/prism-" + &version.to_string());
-        let _ = remove_dir_all(prismup_root_dir.to_owned() + "prism/" + &version.to_string());
+        remove_file(prismup_root_dir.to_owned() + "bin/prism-" + &version.to_string())?;
+        remove_dir_all(prismup_root_dir.to_owned() + "prism/" + &version.to_string())?;
         println!("Prism version {} removed.", version);
     }
     Ok(())
@@ -55,7 +55,7 @@ pub fn set_current_prism_version(
         let target = format!("{}prism/{}/prism", prismup_root_dir, version);
         let path = Path::new(&target);
         if path.exists() {
-            let _ = remove_file(&prism_symlink);
+            remove_file(&prism_symlink)?;
             symlink(target, prism_symlink)?;
             println!(
                 "Set Prism version {} as your current Prism compiler.",
@@ -67,9 +67,9 @@ pub fn set_current_prism_version(
 }
 
 pub async fn make_prismup_directories(home_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let _ = create_dir_all(format!("{}.cache/prismup/", home_dir)).await;
-    let _ = create_dir_all(format!("{}.prismup/bin/", home_dir)).await;
-    let _ = create_dir_all(format!("{}.prismup/prism/", home_dir)).await;
+    create_dir_all(format!("{}.cache/prismup/", home_dir)).await?;
+    create_dir_all(format!("{}.prismup/bin/", home_dir)).await?;
+    create_dir_all(format!("{}.prismup/prism/", home_dir)).await?;
     Ok(())
 }
 
@@ -148,7 +148,7 @@ pub async fn install_prism_version(
         + &archive_filename;
     let download_filepath = download_dir + &archive_filename;
 
-    let _ = download(client, &archive_url, &download_filepath).await;
+    download(client, &archive_url, &download_filepath).await?;
 
     let right_archive_sha256 = get_sha256(client, &(archive_url.clone() + ".sha256")).await;
 

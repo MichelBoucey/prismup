@@ -63,13 +63,13 @@ pub async fn get_prism_releases(
     let filepath = home_dir.to_owned() + ".cache/prismup/releases.json";
     let ttl = Duration::new(3600, 0);
     if !exists(&filepath).unwrap() {
-        let _ = download(client, releases_url, &filepath).await;
+        download(client, releases_url, &filepath).await?;
     } else {
         let metadata = fs::metadata(&filepath)?;
         if let Ok(time) = metadata.modified()
             && SystemTime::now() > (time + ttl)
         {
-            let _ = download(client, releases_url, &filepath).await;
+            download(client, releases_url, &filepath).await?;
         };
     }
     let file = File::open(filepath)?;

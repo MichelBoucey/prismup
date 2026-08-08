@@ -119,7 +119,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .unwrap()
                 .contains(&version)
         {
-            let _ = set_current_prism_version(prismup_root_dir, &version);
+            set_current_prism_version(prismup_root_dir, &version)?;
         } else {
             let current_prism_versions =
                 get_available_prism_versions(&web_client, &home_dir).await?;
@@ -132,7 +132,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             } else {
                 println!("Sorry but {} is not a Prism version released.", version);
             }
-            let _ = set_current_prism_version(prismup_root_dir, &version);
+            set_current_prism_version(prismup_root_dir, &version)?;
         }
         return Ok(());
     }
@@ -141,7 +141,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         && prism_installed_versions.is_some()
         && prism_installed_versions.unwrap().contains(&version)
     {
-        let _ = prism_version_remove(prismup_root_dir, &version);
+        prism_version_remove(prismup_root_dir, &version)?;
     }
 
     Ok(())
