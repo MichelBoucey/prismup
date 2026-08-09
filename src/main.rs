@@ -92,8 +92,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(result) = prism_version_to_install {
         let version = match result {
             Ok(version) => version,
-            Err(message) => {
-                println!("{}", message);
+            Err(e) => {
+                println!("{}", e);
                 return Ok(());
             }
         };
@@ -121,8 +121,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(result) = prism_version_to_set {
         let version = match result {
             Ok(version) => version,
-            Err(message) => {
-                println!("{}", message);
+            Err(e) => {
+                println!("{}", e);
                 return Ok(());
             }
         };
@@ -132,9 +132,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         if is_installed {
             set_current_prism_version(&prismup_root_dir, &version)?;
         } else {
-            let current_prism_versions =
+            let available_prism_versions =
                 get_available_prism_versions(&web_client, &home_dir).await?;
-            if current_prism_versions.contains(&version) {
+            if available_prism_versions.contains(&version) {
                 println!(
                     "Prism version {} needs to be installed before being set.",
                     version.to_string().bold()
@@ -154,17 +154,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if let Some(result) = prism_version_to_remove {
         let version = match result {
             Ok(version) => version,
-            Err(message) => {
-                println!("{}", message);
+            Err(e) => {
+                println!("{}", e);
                 return Ok(());
             }
         };
-        let is_installed = prism_installed_versions
-            .as_ref()
-            .is_some_and(|versions| versions.contains(&version));
-        if is_installed {
-            prism_version_remove(&prismup_root_dir, &version)?;
-        }
+        let available_prism_versions = get_available_prism_versions(&web_client, &home_dir).await?;
+        prism_version_remove(
+            &prismup_root_dir,
+            &available_prism_versions,
+            &prism_installed_versions.unwrap(),
+            &version,
+        )?;
         return Ok(());
     }
 

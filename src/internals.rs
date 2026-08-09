@@ -18,22 +18,41 @@ use crate::to_semver;
 
 pub fn prism_version_remove(
     prismup_root_dir: &str,
+    available_versions: &[Version],
+    installed_versions: &[Version],
     version: &Version,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    match get_current_prism_version(prismup_root_dir) {
-        Some(current_version) if current_version == *version => {
+    if available_versions.contains(version) {
+        if installed_versions.contains(version) {
+            match get_current_prism_version(prismup_root_dir) {
+                Some(current_version) if current_version == *version => {
+                    println!(
+                        "Prism version {} is your current Prism compiler.",
+                        version.to_string().bold()
+                    );
+                    println!("Please set another Prism version before removing this one.");
+                }
+                _ => {
+                    remove_file(prismup_root_dir.to_owned() + "bin/prism-" + &version.to_string())?;
+                    remove_dir_all(prismup_root_dir.to_owned() + "prism/" + &version.to_string())?;
+                    println!("Prism version {} removed.", version.to_string().bold());
+                }
+            }
+        } else {
             println!(
-                "Prism version {} is your current Prism compiler.",
-                version.to_string().bold()
+                "{} {}",
+                version.to_string().red(),
+                "is not an installed version of Prism.".red()
             );
-            println!("Please set another Prism version before removing this one.");
         }
-        _ => {
-            remove_file(prismup_root_dir.to_owned() + "bin/prism-" + &version.to_string())?;
-            remove_dir_all(prismup_root_dir.to_owned() + "prism/" + &version.to_string())?;
-            println!("Prism version {} removed.", version);
-        }
+    } else {
+        println!(
+            "{} {}",
+            version.to_string().red(),
+            "is not even an available version of Prism.".red()
+        );
     }
+
     Ok(())
 }
 
@@ -174,7 +193,11 @@ pub async fn install_prism_version(
             format!("{}.prismup/bin/prism-{}", home_dir, version),
         )?;
     } else {
-        return Err(format!("SHA256 integrity check failed for '{}'", archive_filename.red()).into());
+        return Err(format!(
+            "SHA256 integrity check failed for '{}'",
+            archive_filename.red()
+        )
+        .into());
     }
 
     Ok(())

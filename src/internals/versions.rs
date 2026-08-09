@@ -18,7 +18,6 @@ pub fn get_versions_list(available_versions: &[Version], versions_installed: &[V
             );
         } else {
             println!("{} {}", "Prism".dimmed(), version.to_string().dimmed());
-            // println!();
         }
     }
 }
