@@ -139,7 +139,7 @@ pub async fn install_prism_version(
     let archive_os_string = match os {
         "Linux" => "unknown-linux-gnu".to_string(),
         "Darwin" => "apple-darwin".to_string(),
-        &_ => todo!(), // TODO!
+        &_ => return Err((os.to_owned() + "is not supported".into()).into()),
     };
 
     let version = &format!("{}", version).to_string();
