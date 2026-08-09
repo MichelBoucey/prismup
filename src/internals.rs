@@ -20,14 +20,16 @@ pub fn prism_version_remove(
     prismup_root_dir: &str,
     version: &Version,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let current_prism_version = get_current_prism_version(prismup_root_dir);
-    if *version == *current_prism_version.as_ref().unwrap() {
-        println!("Prism version {} is your current Prism compiler.", version);
-        println!("Please set another Prism version before removing this one.");
-    } else {
-        remove_file(prismup_root_dir.to_owned() + "bin/prism-" + &version.to_string())?;
-        remove_dir_all(prismup_root_dir.to_owned() + "prism/" + &version.to_string())?;
-        println!("Prism version {} removed.", version);
+    match get_current_prism_version(prismup_root_dir) {
+        Some(current_version) if current_version == *version => {
+            println!("Prism version {} is your current Prism compiler.", version);
+            println!("Please set another Prism version before removing this one.");
+        }
+        _ => {
+            remove_file(prismup_root_dir.to_owned() + "bin/prism-" + &version.to_string())?;
+            remove_dir_all(prismup_root_dir.to_owned() + "prism/" + &version.to_string())?;
+            println!("Prism version {} removed.", version);
+        }
     }
     Ok(())
 }
@@ -35,7 +37,7 @@ pub fn prism_version_remove(
 pub fn get_current_prism_version(prismup_root_dir: &str) -> Option<Version> {
     let current_prism_target = read_link(prismup_root_dir.to_owned() + "bin/prism");
     if let Ok(target) = current_prism_target {
-        Some(to_semver(target.to_str()?).unwrap())
+        to_semver(target.to_str()?).ok()
     } else {
         None
     }
@@ -45,8 +47,7 @@ pub fn set_current_prism_version(
     prismup_root_dir: &str,
     version: &Version,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let current_prism_version = get_current_prism_version(prismup_root_dir);
-    if current_prism_version.is_some() && current_prism_version.unwrap() == *version {
+    if get_current_prism_version(prismup_root_dir).as_ref() == Some(version) {
         println!(
             "Prism version {} is already set as your current Prism compiler.",
             version
@@ -85,12 +86,14 @@ pub async fn install_prism_upgrade(
     let available_prism_versions = get_available_prism_versions(client, home_dir).await?;
     let prism_installed_version =
         get_prism_installed_versions(&(home_dir.to_owned() + ".prismup/prism/"));
-    let latest_prism_version_to_install = available_prism_versions.last().unwrap();
-    if prism_installed_version.is_none()
-        || !prism_installed_version
-            .unwrap()
-            .contains(latest_prism_version_to_install)
-    {
+    let latest_prism_version_to_install = available_prism_versions
+        .last()
+        .ok_or("No Prism version released yet.")?;
+    let prismup_root_dir = home_dir.to_owned() + ".prismup/";
+    let is_latest_installed = prism_installed_version
+        .as_ref()
+        .is_some_and(|versions| versions.contains(latest_prism_version_to_install));
+    if !is_latest_installed {
         println!(
             "Installation of the latest Prism compiler ({}).",
             latest_prism_version_to_install
@@ -103,20 +106,13 @@ pub async fn install_prism_upgrade(
             home_dir,
         )
         .await?;
-        set_current_prism_version(
-            &(home_dir.to_owned() + ".prismup/"),
-            latest_prism_version_to_install,
-        )?;
     } else {
         println!(
             "The latest Prism version {} is already installed.",
             latest_prism_version_to_install
         );
-        set_current_prism_version(
-            &(home_dir.to_owned() + ".prismup/"),
-            latest_prism_version_to_install,
-        )?;
     }
+    set_current_prism_version(&prismup_root_dir, latest_prism_version_to_install)?;
     Ok(())
 }
 
@@ -139,46 +135,46 @@ pub async fn install_prism_version(
     let archive_os_string = match os {
         "Linux" => "unknown-linux-gnu".to_string(),
         "Darwin" => "apple-darwin".to_string(),
-        &_ => return Err((os.to_owned() + "is not supported").into()),
+        &_ => return Err(format!("{} is not supported", os).into()),
     };
 
-    let version = &format!("{}", version).to_string();
+    let version = version.to_string();
     let archive_filename =
-        "prism-".to_owned() + version + "-" + architecture + "-" + &archive_os_string + ".tar.gz";
-    let archive_url = "https://github.com/sdiehl/prism/releases/download/v".to_string()
-        + version
-        + "/"
-        + &archive_filename;
+        format!("prism-{}-{}-{}.tar.gz", version, architecture, archive_os_string);
+    let archive_url = format!(
+        "https://github.com/sdiehl/prism/releases/download/v{}/{}",
+        version, archive_filename
+    );
     let download_filepath = download_dir + &archive_filename;
 
     download_backoff(client, &archive_url, &download_filepath).await?;
 
-    let right_archive_sha256 = get_sha256(client, &(archive_url.clone() + ".sha256")).await;
+    let right_archive_sha256 =
+        get_sha256(client, &(archive_url.clone() + ".sha256")).await?;
 
-    if is_file_integrity_ok(
-        &right_archive_sha256.unwrap(),
-        Path::new(&download_filepath),
-    )? {
+    if is_file_integrity_ok(&right_archive_sha256, Path::new(&download_filepath))? {
         let tar_gz = File::open(download_filepath)?;
         let tar = GzDecoder::new(tar_gz);
         let mut archive = Archive::new(tar);
         archive.unpack(install_dir.clone())?;
 
-        rename(
-            install_dir.clone()
-                + "prism-"
-                + version
-                + "-"
-                + architecture
-                + "-"
-                + &archive_os_string,
-            install_dir.clone() + version,
-        )?;
+        let extracted_dir = install_dir.clone() + &archive_filename.replace(".tar.gz", "");
+        let install_version_dir = install_dir + &version;
+        if Path::new(&install_version_dir).exists() {
+            remove_dir_all(&install_version_dir)?;
+        }
+        rename(&extracted_dir, &install_version_dir)?;
 
         fs::symlink(
-            install_dir.clone() + version + "/prism",
+            install_version_dir + "/prism",
             format!("{}.prismup/bin/prism-{}", home_dir, version),
         )?;
+    } else {
+        return Err(format!(
+            "SHA256 integrity check failed for '{}'",
+            archive_filename
+        )
+        .into());
     }
 
     Ok(())

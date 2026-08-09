@@ -1,20 +1,19 @@
 use crate::types::Release;
 use exponential_backoff::Backoff;
 use futures_util::TryStreamExt;
-use reqwest::header::{HeaderMap, HeaderValue};
-use std::fs::{File, exists};
+use std::fs;
+use std::fs::File;
 use std::io::BufReader;
 use std::time::{Duration, SystemTime};
-use std::{fs, thread};
 
 pub static USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
-pub async fn web_client() -> reqwest::Client {
+pub async fn web_client() -> Result<reqwest::Client, Box<dyn std::error::Error>> {
     reqwest::Client::builder()
         .user_agent(USER_AGENT)
         .timeout(Duration::from_secs(30))
         .build()
-        .expect("Web client build fails")
+        .map_err(|e| format!("Web client build fails: {}", e).into())
 }
 
 pub async fn get_sha256(
@@ -23,12 +22,14 @@ pub async fn get_sha256(
 ) -> Result<String, Box<dyn std::error::Error>> {
     let sha256 = client
         .get(url)
-        .headers(headers())
         .send()
         .await
-        .map_err(|e| format!("Failed to download SHA256 file'{}': {}", url, e))?;
+        .map_err(|e| format!("Failed to download SHA256 file'{}': {}", url, e))?
+        .error_for_status()?;
     let sha256 = sha256.text().await?;
-    let sha256 = &sha256[0..64];
+    let sha256 = sha256
+        .get(..64)
+        .ok_or_else(|| format!("SHA256 file '{}' has an invalid format", url))?;
     Ok("sha256:".to_owned() + sha256)
 }
 
@@ -38,18 +39,25 @@ pub async fn download_backoff(
     filepath: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let attempts = 5;
-    let min = Duration::from_millis(150);
-    let max = Duration::from_secs(20);
+    let min = Duration::from_millis(500);
+    let max = Duration::from_secs(60);
+    let mut last_error = None;
     for duration in Backoff::new(attempts, min, max) {
         match download(client, url, filepath).await {
             Ok(()) => return Ok(()),
             Err(e) => match duration {
-                Some(duration) => thread::sleep(duration),
+                Some(duration) => {
+                    last_error = Some(e);
+                    tokio::time::sleep(duration).await;
+                }
                 None => return Err(e),
             },
         }
     }
-    Ok(())
+    match last_error {
+        Some(e) => Err(e),
+        None => Err("Download failed.".into()),
+    }
 }
 
 pub async fn download(
@@ -59,16 +67,16 @@ pub async fn download(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let response = client
         .get(url)
-        .headers(headers())
         .send()
         .await
-        .map_err(|e| format!("Failed to download from '{}': {}", url, e))?;
+        .map_err(|e| format!("Failed to download from '{}': {}", url, e))?
+        .error_for_status()?;
 
     let mut file = std::fs::File::create(filepath)
         .map_err(|e| format!("Failed to create '{}': {}", filepath, e))?;
     let mut stream = response.bytes_stream();
 
-    while let Ok(Some(bytes)) = stream.try_next().await {
+    while let Some(bytes) = stream.try_next().await? {
         use std::io::Write;
         file.write_all(&bytes)
             .map_err(|e| format!("Failed to write stream to '{}': {}", filepath, e))?;
@@ -83,31 +91,18 @@ pub async fn get_prism_releases(
     let releases_url = "https://api.github.com/repos/sdiehl/prism/releases";
     let filepath = home_dir.to_owned() + ".cache/prismup/releases.json";
     let ttl = Duration::new(3600, 0);
-    if !exists(&filepath).unwrap() {
+    let cache_is_stale = match fs::metadata(&filepath) {
+        Ok(metadata) => match metadata.modified() {
+            Ok(time) => SystemTime::now() > (time + ttl),
+            Err(_) => true,
+        },
+        Err(_) => true,
+    };
+    if cache_is_stale {
         download_backoff(client, releases_url, &filepath).await?;
-    } else {
-        let metadata = fs::metadata(&filepath)?;
-        if let Ok(time) = metadata.modified()
-            && SystemTime::now() > (time + ttl)
-        {
-            download_backoff(client, releases_url, &filepath).await?;
-        };
     }
     let file = File::open(filepath)?;
     let reader = BufReader::new(file);
     let releases: Vec<Release> = serde_json::from_reader(reader)?;
     Ok(releases)
-}
-
-fn headers() -> HeaderMap {
-    let mut headers = HeaderMap::new();
-    headers.insert(
-        "Content-Type",
-        HeaderValue::from_static("application/octet-stream"),
-    );
-    headers.insert(
-        "Content-Disposition",
-        HeaderValue::from_static("attachment"),
-    );
-    headers
 }

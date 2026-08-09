@@ -1,4 +1,3 @@
-use semver::Version;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -106,4 +105,4 @@ pub struct Reactions {
     pub eyes: i64,
 }
 
-pub struct VecVersion(pub Vec<Version>);
+
