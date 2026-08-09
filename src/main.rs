@@ -68,11 +68,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     if print_prism_versions_list {
         let available_prism_versions = get_available_prism_versions(&web_client, &home_dir).await?;
+        let current_prism_version = get_current_prism_version(&prismup_root_dir);
         match &prism_installed_versions {
-            Some(installed_versions) => {
-                get_versions_list(&available_prism_versions, installed_versions)
-            }
-            None => get_versions_list(&available_prism_versions, &[]),
+            Some(installed_versions) => get_versions_list(
+                &available_prism_versions,
+                installed_versions,
+                current_prism_version.as_ref(),
+            ),
+            None => get_versions_list(&available_prism_versions, &[], current_prism_version.as_ref()),
         }
         return Ok(());
     }

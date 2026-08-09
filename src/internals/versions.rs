@@ -5,16 +5,25 @@ use semver::Version;
 use std::fs;
 use std::sync::OnceLock;
 
-pub fn get_versions_list(available_versions: &[Version], versions_installed: &[Version]) {
+pub fn get_versions_list(
+    available_versions: &[Version],
+    versions_installed: &[Version],
+    current_version: Option<&Version>,
+) {
     let mut versions = available_versions.to_vec();
     versions.reverse();
     for version in versions.iter() {
         if versions_installed.contains(version) {
+            let status = if current_version == Some(version) {
+                "(installed, current)".to_string()
+            } else {
+                "(installed)".to_string()
+            };
             println!(
                 "{} {} {}",
                 "Prism".bold(),
                 version.to_string().bold(),
-                "(installed)".green()
+                status.green()
             );
         } else {
             println!("{} {}", "Prism".dimmed(), version.to_string().dimmed());
