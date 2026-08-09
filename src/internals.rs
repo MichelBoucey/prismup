@@ -1,8 +1,8 @@
-use crate::internals::network::*;
+use colored::Colorize;
 use flate2::read::GzDecoder;
 use semver::Version;
 use sha256::try_digest;
-use std::fs::{File, read_link, remove_dir_all, remove_file, rename};
+use std::fs::{File, exists, read_link, remove_dir_all, remove_file, rename};
 use std::os::unix::fs;
 use std::os::unix::fs::symlink;
 use std::path::Path;
@@ -13,8 +13,8 @@ pub mod network;
 pub mod versions;
 use crate::get_available_prism_versions;
 use crate::get_prism_installed_versions;
+use crate::internals::network::*;
 use crate::to_semver;
-use std::fs::exists;
 
 pub fn prism_version_remove(
     prismup_root_dir: &str,
@@ -22,7 +22,10 @@ pub fn prism_version_remove(
 ) -> Result<(), Box<dyn std::error::Error>> {
     match get_current_prism_version(prismup_root_dir) {
         Some(current_version) if current_version == *version => {
-            println!("Prism version {} is your current Prism compiler.", version);
+            println!(
+                "Prism version {} is your current Prism compiler.",
+                version.to_string().bold()
+            );
             println!("Please set another Prism version before removing this one.");
         }
         _ => {
@@ -50,7 +53,7 @@ pub fn set_current_prism_version(
     if get_current_prism_version(prismup_root_dir).as_ref() == Some(version) {
         println!(
             "Prism version {} is already set as your current Prism compiler.",
-            version
+            version.to_string().bold()
         );
     } else {
         let prism_symlink = format!("{}bin/prism", prismup_root_dir);
@@ -63,7 +66,7 @@ pub fn set_current_prism_version(
             symlink(target, prism_symlink)?;
             println!(
                 "Set Prism version {} as your current Prism compiler.",
-                version
+                version.to_string().bold()
             );
         }
     }
@@ -96,7 +99,7 @@ pub async fn install_prism_upgrade(
     if !is_latest_installed {
         println!(
             "Installation of the latest Prism compiler ({}).",
-            latest_prism_version_to_install
+            latest_prism_version_to_install.to_string().bold()
         );
         install_prism_version(
             client,
@@ -109,7 +112,7 @@ pub async fn install_prism_upgrade(
     } else {
         println!(
             "The latest Prism version {} is already installed.",
-            latest_prism_version_to_install
+            latest_prism_version_to_install.to_string().bold()
         );
     }
     set_current_prism_version(&prismup_root_dir, latest_prism_version_to_install)?;
@@ -139,8 +142,10 @@ pub async fn install_prism_version(
     };
 
     let version = version.to_string();
-    let archive_filename =
-        format!("prism-{}-{}-{}.tar.gz", version, architecture, archive_os_string);
+    let archive_filename = format!(
+        "prism-{}-{}-{}.tar.gz",
+        version, architecture, archive_os_string
+    );
     let archive_url = format!(
         "https://github.com/sdiehl/prism/releases/download/v{}/{}",
         version, archive_filename
@@ -149,8 +154,7 @@ pub async fn install_prism_version(
 
     download_backoff(client, &archive_url, &download_filepath).await?;
 
-    let right_archive_sha256 =
-        get_sha256(client, &(archive_url.clone() + ".sha256")).await?;
+    let right_archive_sha256 = get_sha256(client, &(archive_url.clone() + ".sha256")).await?;
 
     if is_file_integrity_ok(&right_archive_sha256, Path::new(&download_filepath))? {
         let tar_gz = File::open(download_filepath)?;
@@ -170,11 +174,7 @@ pub async fn install_prism_version(
             format!("{}.prismup/bin/prism-{}", home_dir, version),
         )?;
     } else {
-        return Err(format!(
-            "SHA256 integrity check failed for '{}'",
-            archive_filename
-        )
-        .into());
+        return Err(format!("SHA256 integrity check failed for '{}'", archive_filename.red()).into());
     }
 
     Ok(())

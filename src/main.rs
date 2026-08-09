@@ -4,10 +4,10 @@ use crate::internals::args::*;
 use crate::internals::network::web_client;
 use crate::internals::*;
 use crate::versions::*;
+use colored::Colorize;
 use std::env;
 use std::error::Error;
-use std::process::Command;
-use std::process::exit;
+use std::process::{Command, exit};
 use tokio::fs;
 
 #[tokio::main]
@@ -23,8 +23,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     if matches.get_flag("version") {
         println!(
-            "prismup {} ({}) released under 3-Clause BSD License",
-            env!("CARGO_PKG_VERSION"),
+            "PrismUp {} ({}) released under 3-Clause BSD License",
+            env!("CARGO_PKG_VERSION").to_string().bold(),
             env!("GIT_COMMIT_SHORT_HASH")
         );
         println!("Copyright © 2026 Michel Boucey (michel.boucey@gmail.com)");
@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     if print_current_prism_version {
         match get_current_prism_version(&prismup_root_dir) {
-            Some(version) => println!("Prism {}", version),
+            Some(version) => println!("Prism {}", version.to_string().bold()),
             None => println!("No Prism version set"),
         }
         return Ok(());
@@ -101,16 +101,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .as_ref()
             .is_some_and(|versions| versions.contains(&version));
         if is_installed {
-            println!("Prism {} already installed.", version);
+            println!("Prism {} already installed.", version.to_string().bold());
         } else {
             let current_prism_versions =
                 get_available_prism_versions(&web_client, &home_dir).await?;
             if current_prism_versions.contains(&version) {
                 println!("Installation of Prism compiler version {}...", version);
-                install_prism_version(&web_client, &architecture, &os, &version, &home_dir)
-                    .await?;
+                install_prism_version(&web_client, &architecture, &os, &version, &home_dir).await?;
             } else {
-                println!("Sorry but {} is not a Prism version released.", version);
+                println!(
+                    "Sorry but {} is not a Prism version released.",
+                    version.to_string().bold()
+                );
             }
         }
         return Ok(());
@@ -135,13 +137,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
             if current_prism_versions.contains(&version) {
                 println!(
                     "Prism version {} needs to be installed before being set.",
-                    version
+                    version.to_string().bold()
                 );
-                install_prism_version(&web_client, &architecture, &os, &version, &home_dir)
-                    .await?;
+                install_prism_version(&web_client, &architecture, &os, &version, &home_dir).await?;
                 set_current_prism_version(&prismup_root_dir, &version)?;
             } else {
-                println!("Sorry but {} is not a Prism version released.", version);
+                println!(
+                    "Sorry but {} is not a Prism version released.",
+                    version.to_string().bold()
+                );
             }
         }
         return Ok(());

@@ -1,4 +1,5 @@
 use crate::internals::get_prism_releases;
+use colored::Colorize;
 use regex::Regex;
 use semver::Version;
 use std::fs;
@@ -8,11 +9,16 @@ pub fn get_versions_list(available_versions: &[Version], versions_installed: &[V
     let mut versions = available_versions.to_vec();
     versions.reverse();
     for version in versions.iter() {
-        print!("Prism {}", version);
         if versions_installed.contains(version) {
-            println!(" (is installed)");
+            println!(
+                "{} {} {}",
+                "Prism".bold(),
+                version.to_string().bold(),
+                "(installed)".green()
+            );
         } else {
-            println!();
+            println!("{} {}", "Prism".dimmed(), version.to_string().dimmed());
+            // println!();
         }
     }
 }
