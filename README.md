@@ -8,7 +8,7 @@
 
 ## 2. Dependencies
 
-`Prism`, as compiler, needs `LLVM/Clang` to run on your system (on `macOS`, `Prism` < 0.17.0 needs `z3` library to be installed). See the [README](https://github.com/sdiehl/prism/blob/main/README.md) of the project. `PrismUp` don't install those dependencies but only `Prism`.
+`Prism`, as compiler, needs `LLVM/Clang` to run on your system (on `macOS`, `Prism` < 0.17.0 needs `z3` library to be installed).  `PrismUp` don't install those dependencies but only `Prism`. See [the README of the Prism's project](https://github.com/sdiehl/prism/blob/main/README.md).
 
 ## 3. Installation of PrismUp
 
