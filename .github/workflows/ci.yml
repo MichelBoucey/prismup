@@ -1,6 +1,18 @@
 name: PrismUp CI
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'build.rs'
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'build.rs'
+    paths-ignore:
+      - 'README.md'
 
 jobs:
   on-linux-x86-64:
