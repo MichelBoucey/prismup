@@ -12,17 +12,17 @@
 
 ## 3. Installation of PrismUp
 
-### From Releases
+### 3.1. From Releases
 
 Just download from (releases)[https://github.com/MichelBoucey/prismup/releases].
 
-### 3.1. From crates.io
+### 3.2. From crates.io
 
 ```
 cargo install prismup
 ```
 
-### 3.2. From sources
+### 3.3. From sources
 
 ```
 just install
