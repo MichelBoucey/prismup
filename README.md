@@ -14,7 +14,7 @@
 
 ### 3.1. From Releases
 
-Just download from (releases)[https://github.com/MichelBoucey/prismup/releases].
+Just download from [releases](https://github.com/MichelBoucey/prismup/releases).
 
 ### 3.2. From crates.io
 
