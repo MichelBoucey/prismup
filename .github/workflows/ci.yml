@@ -2,13 +2,9 @@ name: PrismUp CI
 
 on:
   push:
-    paths:
-      - 'src/**'
     paths-ignore:
       - 'README.md'
   pull_request:
-    paths:
-      - 'src/**'
     paths-ignore:
       - 'README.md'
 
