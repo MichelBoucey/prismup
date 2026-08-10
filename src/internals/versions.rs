@@ -52,9 +52,14 @@ pub async fn get_available_prism_versions(
     client: &reqwest::Client,
     home_dir: &str,
 ) -> Result<Vec<Version>, String> {
-    let releases = get_prism_releases(client, home_dir)
-        .await
-        .map_err(|_| "Failed to get Prism releases from Github.".to_string())?;
+    let releases = get_prism_releases(client, home_dir).await.map_err(|_| {
+        format!(
+            "{}",
+            "Failed to get Prism releases from Github."
+                .to_string()
+                .red()
+        )
+    })?;
     let mut versions = Vec::new();
     for release in releases.iter() {
         versions.push(to_semver(&release.tag_name)?);
@@ -65,9 +70,15 @@ pub async fn get_available_prism_versions(
 
 pub fn to_semver(string: &str) -> Result<Version, String> {
     let semver_str = get_semver(string)?;
-    semver_str
-        .parse()
-        .map_err(|e| format!("Invalid semver '{}': {}", string, e))
+    semver_str.parse().map_err(|e: semver::Error| {
+        format!(
+            "{}{}{}{}",
+            "Invalid semver '".red(),
+            string.red(),
+            "' ".red(),
+            e.to_string().red()
+        )
+    })
 }
 
 pub fn get_semver(s: &str) -> Result<String, String> {
@@ -76,5 +87,5 @@ pub fn get_semver(s: &str) -> Result<String, String> {
     regex
         .captures(s)
         .map(|c| c[1].to_string())
-        .ok_or_else(|| format!("No version found in '{}'", s))
+        .ok_or_else(|| format!("{}{}{}", "No version found in '".red(), s.red(), "'".red()))
 }

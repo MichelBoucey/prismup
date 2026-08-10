@@ -49,16 +49,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let uname = Command::new("uname")
         .args(["-s", "-m"])
         .output()
-        .map_err(|e| format!("Failed to run 'uname -sm': {}", e))?;
+        .map_err(|e| {
+            format!(
+                "{}: {}",
+                "Failed to run 'uname -sm'".red(),
+                e.to_string().red()
+            )
+        })?;
     let uname_output = String::from_utf8_lossy(&uname.stdout);
     let mut uname_fields = uname_output.split_whitespace();
     let os = match uname_fields.next() {
         Some(os) => os.to_string(),
-        None => return Err("Failed to get the OS name from 'uname'.".into()),
+        None => {
+            return Err(format!("{}", "Failed to get the OS name from 'uname'.".red()).into());
+        }
     };
     let architecture = match uname_fields.next() {
         Some(architecture) => architecture.to_string(),
-        None => return Err("Failed to get the architecture from 'uname'.".into()),
+        None => {
+            return Err(format!("{}", "Failed to get the architecture from 'uname'.".red()).into());
+        }
     };
 
     let web_client = web_client().await?;
@@ -75,7 +85,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 installed_versions,
                 current_prism_version.as_ref(),
             ),
-            None => get_versions_list(&available_prism_versions, &[], current_prism_version.as_ref()),
+            None => get_versions_list(
+                &available_prism_versions,
+                &[],
+                current_prism_version.as_ref(),
+            ),
         }
         return Ok(());
     }

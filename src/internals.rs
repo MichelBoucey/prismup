@@ -110,7 +110,7 @@ pub async fn install_prism_upgrade(
         get_prism_installed_versions(&(home_dir.to_owned() + ".prismup/prism/"));
     let latest_prism_version_to_install = available_prism_versions
         .last()
-        .ok_or("No Prism version released yet.")?;
+        .ok_or(format!("{}", "No Prism version released yet.".red()))?;
     let prismup_root_dir = home_dir.to_owned() + ".prismup/";
     let is_latest_installed = prism_installed_version
         .as_ref()
@@ -157,7 +157,9 @@ pub async fn install_prism_version(
     let archive_os_string = match os {
         "Linux" => "unknown-linux-gnu".to_string(),
         "Darwin" => "apple-darwin".to_string(),
-        &_ => return Err(format!("{} is not supported", os).into()),
+        &_ => {
+            return Err(format!("{} {}", os.red(), "is not supported".red()).into());
+        }
     };
 
     let version = version.to_string();
@@ -194,8 +196,10 @@ pub async fn install_prism_version(
         )?;
     } else {
         return Err(format!(
-            "SHA256 integrity check failed for '{}'",
-            archive_filename.red()
+            "{}{}{}",
+            "SHA256 integrity check failed for '".red(),
+            archive_filename.red(),
+            "'".red()
         )
         .into());
     }
@@ -206,9 +210,11 @@ pub async fn install_prism_version(
 pub fn is_file_integrity_ok(right_sha256_hash: &str, filepath: &Path) -> Result<bool, String> {
     let file_sha256_hash = try_digest(filepath).map_err(|e| {
         format!(
-            "Failed to compute SHA256 for '{}': {}",
-            filepath.display(),
-            e
+            "{}{}{}: {}",
+            "Failed to compute SHA256 for '".red(),
+            filepath.display().to_string().red(),
+            "': ".red(),
+            e.to_string().red()
         )
     })?;
     Ok(("sha256:".to_owned() + &file_sha256_hash) == right_sha256_hash)

@@ -1,4 +1,5 @@
 use crate::types::Release;
+use colored::Colorize;
 use exponential_backoff::Backoff;
 use futures_util::TryStreamExt;
 use std::fs;
@@ -13,7 +14,7 @@ pub async fn web_client() -> Result<reqwest::Client, Box<dyn std::error::Error>>
         .user_agent(USER_AGENT)
         .timeout(Duration::from_secs(30))
         .build()
-        .map_err(|e| format!("Web client build fails: {}", e).into())
+        .map_err(|e| format!("{}: {}", "Web client build fails".red(), e.to_string().red()).into())
 }
 
 pub async fn get_sha256(
@@ -24,12 +25,27 @@ pub async fn get_sha256(
         .get(url)
         .send()
         .await
-        .map_err(|e| format!("Failed to download SHA256 file'{}': {}", url, e))?
+        .map_err(|e| {
+            format!(
+                "{}{}{}: {}",
+                "Failed to download SHA256 file'".red(),
+                url.red(),
+                "'".red(),
+                e.to_string().red()
+            )
+        })?
         .error_for_status()?;
     let sha256 = sha256.text().await?;
     let sha256 = sha256
         .get(..64)
-        .ok_or_else(|| format!("SHA256 file '{}' has an invalid format", url))?;
+        .ok_or_else(|| {
+            format!(
+                "{}{}{}",
+                "SHA256 file '".red(),
+                url.red(),
+                "' has an invalid format".red()
+            )
+        })?;
     Ok("sha256:".to_owned() + sha256)
 }
 
@@ -56,7 +72,7 @@ pub async fn download_backoff(
     }
     match last_error {
         Some(e) => Err(e),
-        None => Err("Download failed.".into()),
+        None => Err(format!("{}", "Download failed.".red()).into()),
     }
 }
 
@@ -69,17 +85,41 @@ pub async fn download(
         .get(url)
         .send()
         .await
-        .map_err(|e| format!("Failed to download from '{}': {}", url, e))?
+        .map_err(|e| {
+            format!(
+                "{}{}{}: {}",
+                "Failed to download from '".red(),
+                url.red(),
+                "': ".red(),
+                e.to_string().red()
+            )
+        })?
         .error_for_status()?;
 
     let mut file = std::fs::File::create(filepath)
-        .map_err(|e| format!("Failed to create '{}': {}", filepath, e))?;
+        .map_err(|e| {
+            format!(
+                "{}{}{}: {}",
+                "Failed to create '".red(),
+                filepath.red(),
+                "': ".red(),
+                e.to_string().red()
+            )
+        })?;
     let mut stream = response.bytes_stream();
 
     while let Some(bytes) = stream.try_next().await? {
         use std::io::Write;
         file.write_all(&bytes)
-            .map_err(|e| format!("Failed to write stream to '{}': {}", filepath, e))?;
+            .map_err(|e| {
+                format!(
+                    "{}{}{}: {}",
+                    "Failed to write stream to '".red(),
+                    filepath.red(),
+                    "': ".red(),
+                    e.to_string().red()
+                )
+            })?;
     }
     Ok(())
 }
