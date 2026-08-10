@@ -23,7 +23,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Installation of Just
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
 
       - name: Build of PrismUp
         run: just build
@@ -57,7 +57,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Installation of Just
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
 
       - name: Build of PrismUp
         run: just build
@@ -91,7 +91,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Installation of Just
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
 
       - name: Build of PrismUp
         run: just build
