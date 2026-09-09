@@ -81,7 +81,7 @@ Prism 0.2.0
 Prism 0.1.0
 ```
 
-### 6.2. Setting a specific version
+### 6.2. Setting a specific Prism version
 
 ```
 user@box $ prismup --set-version 0.19.0
