@@ -26,6 +26,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         exit(0);
     }
 
+    if matches.get_flag("uninstall") {
+        uninstall(&home_dir)?;
+        exit(0);
+    }
+
     if matches.get_flag("version") {
         println!(
             "PrismUp {} ({}) released under 3-Clause BSD License",

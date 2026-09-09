@@ -67,4 +67,10 @@ pub fn cli() -> Command {
                 .long("cache-clear")
                 .help("Clear the PrismUp cache directory contents"),
         )
+        .arg(
+            Arg::new("uninstall")
+                .action(ArgAction::SetTrue)
+                .long("uninstall-prismup")
+                .help("Uninstall PrismUp"),
+        )
 }
