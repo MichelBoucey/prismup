@@ -112,7 +112,7 @@ pub fn uninstall(home_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
         println!("Removing the prismup binary at '{}'...", exe_path.display());
         remove_file(exe_path)?;
     }
-    println!("Please remove '$HOME/.prismup/bin/' from your PATH.");
+    println!("You can remove '$HOME/.prismup/bin/' from your PATH.");
     Ok(())
 }
 
