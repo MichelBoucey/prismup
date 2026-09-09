@@ -2,7 +2,7 @@ use colored::Colorize;
 use flate2::read::GzDecoder;
 use semver::Version;
 use sha256::try_digest;
-use std::fs::{File, exists, read_link, remove_dir_all, remove_file, rename};
+use std::fs::{File, exists, read_dir, read_link, remove_dir_all, remove_file, rename};
 use std::os::unix::fs;
 use std::os::unix::fs::symlink;
 use std::path::Path;
@@ -89,6 +89,16 @@ pub fn set_current_prism_version(
             );
         }
     }
+    Ok(())
+}
+
+pub fn clear_cache(home_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let cache_dir = format!("{}.cache/prismup/", home_dir);
+    for entry in read_dir(&cache_dir)? {
+        let entry = entry?;
+        remove_file(entry.path())?;
+    }
+    println!("{}", "PrismUp cache cleared.".green());
     Ok(())
 }
 
