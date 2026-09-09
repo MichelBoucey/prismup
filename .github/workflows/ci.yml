@@ -102,6 +102,12 @@ jobs:
       - name: Run Prism compiler
         run: ~/.prismup/bin/prism --version
 
+      - name: Set a specific version of Prism
+        run: target/debug/prismup --set-version 0.18.0
+
+      - name: Run the Prism compiler just added
+        run: ~/.prismup/bin/prism --version
+
       - name: Show Prism versions status
         run: target/debug/prismup --versions-list
 

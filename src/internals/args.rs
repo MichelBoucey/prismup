@@ -60,4 +60,17 @@ pub fn cli() -> Command {
                 .value_name("SEMVER")
                 .help("Remove the given Prism version"),
         )
+        .arg(
+            Arg::new("cacheclear")
+                .action(ArgAction::SetTrue)
+                .short('C')
+                .long("cache-clear")
+                .help("Clear the PrismUp cache directory contents"),
+        )
+        .arg(
+            Arg::new("uninstall")
+                .action(ArgAction::SetTrue)
+                .long("uninstall-prismup")
+                .help("Uninstall PrismUp"),
+        )
 }

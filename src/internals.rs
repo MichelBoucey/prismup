@@ -2,7 +2,8 @@ use colored::Colorize;
 use flate2::read::GzDecoder;
 use semver::Version;
 use sha256::try_digest;
-use std::fs::{File, exists, read_link, remove_dir_all, remove_file, rename};
+use std::env;
+use std::fs::{File, exists, read_dir, read_link, remove_dir_all, remove_file, rename};
 use std::os::unix::fs;
 use std::os::unix::fs::symlink;
 use std::path::Path;
@@ -89,6 +90,29 @@ pub fn set_current_prism_version(
             );
         }
     }
+    Ok(())
+}
+
+pub fn clear_cache(home_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let cache_dir = format!("{}.cache/prismup/", home_dir);
+    for entry in read_dir(&cache_dir)? {
+        let entry = entry?;
+        remove_file(entry.path())?;
+    }
+    println!("{}", "PrismUp cache cleared.".green());
+    Ok(())
+}
+
+pub fn uninstall(home_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Removing '{}.prismup/'...", home_dir);
+    remove_dir_all(format!("{}.prismup/", home_dir))?;
+    println!("Removing '{}.cache/prismup/'...", home_dir);
+    remove_dir_all(format!("{}.cache/prismup/", home_dir))?;
+    if let Ok(exe_path) = env::current_exe() {
+        println!("Removing the prismup binary at '{}'...", exe_path.display());
+        remove_file(exe_path)?;
+    }
+    println!("You can remove '$HOME/.prismup/bin/' from your PATH.");
     Ok(())
 }
 

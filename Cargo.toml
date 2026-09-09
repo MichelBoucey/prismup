@@ -1,11 +1,11 @@
 [package]
 name = "prismup"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 authors = ["Michel Boucey <michel.boucey@gmail.com>"]
 license = "BSD-3-Clause"
 categories = ["command-line-utilities"]
-description = "A Prism language installer"
+description = "An installer and version manager for the Prism language"
 homepage = "https://github.com/MichelBoucey/prismup"
 repository = "https://github.com/MichelBoucey/prismup"
 readme = "README.md"
