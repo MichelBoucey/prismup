@@ -142,7 +142,6 @@ pub async fn get_prism_releases(
         Err(_) => true,
     };
     if cache_is_stale {
-        println!("Refreshing all Prism releases data cache.");
         download_backoff(client, releases_url, &filepath).await?;
     }
     let file = File::open(filepath)?;
