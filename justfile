@@ -4,7 +4,15 @@ default:
     @just --list
 
 lint:
-    cargo clippy
+    cargo clippy --all-targets
+
+test:
+    cargo test
+
+check:
+    cargo fmt --check
+    cargo clippy --all-targets
+    cargo test
 
 fmt:
     just --fmt
