@@ -28,6 +28,9 @@ jobs:
       - name: Build of PrismUp
         run: just build
 
+      - name: Test of PrismUp
+        run: just test
+
       - name: First run
         run: target/debug/prismup
 
@@ -42,6 +45,12 @@ jobs:
 
       - name: Show Prism versions status
         run: target/debug/prismup --versions-list
+
+      - name: Refuse a Prism version released without a binary for this platform
+        run: '! target/debug/prismup --install-version 0.1.0'
+
+      - name: Refuse several actions at the same time
+        run: '! target/debug/prismup --upgrade --current-version'
 
   on-linux-arm:
 
@@ -62,6 +71,9 @@ jobs:
       - name: Build of PrismUp
         run: just build
 
+      - name: Test of PrismUp
+        run: just test
+
       - name: First run
         run: target/debug/prismup
 
@@ -76,6 +88,12 @@ jobs:
 
       - name: Show Prism versions status
         run: target/debug/prismup --versions-list
+
+      - name: Refuse a Prism version released without a binary for this platform
+        run: '! target/debug/prismup --install-version 0.1.0'
+
+      - name: Refuse several actions at the same time
+        run: '! target/debug/prismup --upgrade --current-version'
 
   on-macos:
 
@@ -96,6 +114,9 @@ jobs:
       - name: Build of PrismUp
         run: just build
 
+      - name: Test of PrismUp
+        run: just test
+
       - name: First run
         run: target/debug/prismup
 
@@ -110,4 +131,10 @@ jobs:
 
       - name: Show Prism versions status
         run: target/debug/prismup --versions-list
+
+      - name: Refuse a Prism version released without a binary for this platform
+        run: '! target/debug/prismup --install-version 0.1.0'
+
+      - name: Refuse several actions at the same time
+        run: '! target/debug/prismup --upgrade --current-version'
 
