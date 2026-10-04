@@ -6,107 +6,117 @@ pub struct NetworkOptions {
     pub offline: bool,
 }
 
+/// The fields of a Github release used by PrismUp.
+///
+/// The other fields of the Github payload are ignored, so that a Github
+/// change on them cannot break the parsing of the Prism releases.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Release {
-    pub url: String,
-    pub assets_url: String,
-    pub upload_url: String,
-    pub html_url: String,
-    pub id: i64,
-    pub author: Author,
-    pub node_id: String,
     pub tag_name: String,
-    pub target_commitish: String,
-    pub name: String,
+    #[serde(default)]
     pub draft: bool,
-    pub immutable: bool,
+    #[serde(default)]
     pub prerelease: bool,
-    pub created_at: String,
-    pub updated_at: String,
-    pub published_at: String,
+    #[serde(default)]
     pub assets: Vec<Assets>,
-    pub tarball_url: String,
-    pub zipball_url: String,
-    pub body: String,
-    pub reactions: Reactions,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+/// An asset of a Github release, without any binary for a platform.
+///
+/// Github does not give any digest for such an asset.
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Assets {
-    pub url: String,
-    pub id: i64,
-    pub node_id: String,
     pub name: String,
-    pub label: String,
-    pub uploader: Uploader,
-    pub content_type: String,
-    pub state: String,
-    pub size: i64,
-    pub digest: String,
-    pub download_count: i64,
-    pub created_at: String,
-    pub updated_at: String,
-    pub browser_download_url: String,
+    #[serde(default)]
+    pub digest: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Uploader {
-    pub login: String,
-    pub id: i64,
-    pub node_id: String,
-    pub avatar_url: String,
-    pub gravatar_id: String,
-    pub url: String,
-    pub html_url: String,
-    pub followers_url: String,
-    pub following_url: String,
-    pub gists_url: String,
-    pub starred_url: String,
-    pub subscriptions_url: String,
-    pub organizations_url: String,
-    pub repos_url: String,
-    pub events_url: String,
-    pub received_events_url: String,
-    pub r#type: String,
-    pub user_view_type: String,
-    pub site_admin: bool,
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Author {
-    pub login: String,
-    pub id: i64,
-    pub node_id: String,
-    pub avatar_url: String,
-    pub gravatar_id: String,
-    pub url: String,
-    pub html_url: String,
-    pub followers_url: String,
-    pub following_url: String,
-    pub gists_url: String,
-    pub starred_url: String,
-    pub subscriptions_url: String,
-    pub organizations_url: String,
-    pub repos_url: String,
-    pub events_url: String,
-    pub received_events_url: String,
-    pub r#type: String,
-    pub user_view_type: String,
-    pub site_admin: bool,
-}
+    const RELEASE_WITHOUT_OPTIONAL_GITHUB_FIELDS: &str = r#"{
+      "tag_name": "v0.23.0",
+      "draft": false,
+      "prerelease": false,
+      "assets": [
+        { "name": "prism-0.23.0-x86_64-unknown-linux-gnu.tar.gz", "digest": null },
+        {
+          "name": "prism-0.23.0-x86_64-unknown-linux-gnu.tar.gz.sha256",
+          "digest": "sha256:39e84f0677d722cf15e8142f016f1b39a55640c6d14b5f8120dfbadb5ffa807a"
+        }
+      ]
+    }"#;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Reactions {
-    pub url: String,
-    pub total_count: i64,
-    #[serde(rename = "+1")]
-    pub plusone: i64,
-    #[serde(rename = "-1")]
-    pub minusone: i64,
-    pub laugh: i64,
-    pub hooray: i64,
-    pub confused: i64,
-    pub heart: i64,
-    pub rocket: i64,
-    pub eyes: i64,
+    const RELEASE_CACHED_BY_A_PREVIOUS_PRISMUP_VERSION: &str = r#"{
+      "url": "https://api.github.com/repos/sdiehl/prism/releases/1",
+      "author": { "login": "sdiehl", "id": 1 },
+      "tag_name": "v0.22.0",
+      "immutable": false,
+      "draft": false,
+      "prerelease": false,
+      "assets": [
+        {
+          "name": "prism-0.22.0-x86_64-unknown-linux-gnu.tar.gz",
+          "label": "",
+          "uploader": { "login": "sdiehl", "id": 1 },
+          "digest": "sha256:39e84f0677d722cf15e8142f016f1b39a55640c6d14b5f8120dfbadb5ffa807a"
+        }
+      ],
+      "reactions": { "url": "https://api.github.com/reactions", "total_count": 0, "+1": 1 }
+    }"#;
+
+    #[test]
+    fn a_release_cached_by_a_previous_prismup_version_is_parsed() {
+        let release: Release = serde_json::from_str(RELEASE_CACHED_BY_A_PREVIOUS_PRISMUP_VERSION)
+            .expect("a release cached by a previous PrismUp version should be parsed");
+        assert_eq!(release.tag_name, "v0.22.0");
+        assert_eq!(release.assets.len(), 1);
+        assert_eq!(
+            release.assets[0].name,
+            "prism-0.22.0-x86_64-unknown-linux-gnu.tar.gz"
+        );
+        assert!(release.assets[0].digest.is_some());
+    }
+
+    #[test]
+    fn a_release_without_the_optional_github_fields_is_parsed() {
+        let release: Release = serde_json::from_str(RELEASE_WITHOUT_OPTIONAL_GITHUB_FIELDS)
+            .expect("a Github release without its optional fields should be parsed");
+        assert_eq!(release.tag_name, "v0.23.0");
+        assert!(!release.draft);
+        assert!(!release.prerelease);
+        assert_eq!(
+            release
+                .assets
+                .iter()
+                .map(|asset| asset.name.as_str())
+                .collect::<Vec<&str>>(),
+            vec![
+                "prism-0.23.0-x86_64-unknown-linux-gnu.tar.gz",
+                "prism-0.23.0-x86_64-unknown-linux-gnu.tar.gz.sha256"
+            ]
+        );
+        assert_eq!(release.assets[0].digest, None);
+        assert!(release.assets[1].digest.is_some());
+    }
+
+    #[test]
+    fn a_release_without_any_asset_is_parsed() {
+        let release: Release = serde_json::from_str(r#"{ "tag_name": "v0.2.0" }"#)
+            .expect("a Github release without any asset should be parsed");
+        assert_eq!(release.tag_name, "v0.2.0");
+        assert!(!release.draft);
+        assert!(!release.prerelease);
+        assert!(release.assets.is_empty());
+    }
+
+    #[test]
+    fn an_asset_without_any_digest_is_parsed() {
+        let asset: Assets =
+            serde_json::from_str(r#"{ "name": "prism-0.2.0-x86_64-unknown-linux-gnu.tar.gz" }"#)
+                .expect("a Github asset without any digest should be parsed");
+        assert_eq!(asset.name, "prism-0.2.0-x86_64-unknown-linux-gnu.tar.gz");
+        assert_eq!(asset.digest, None);
+    }
 }

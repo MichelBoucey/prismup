@@ -1,6 +1,6 @@
 [package]
 name = "prismup"
-version = "1.2.0"
+version = "1.2.1"
 edition = "2024"
 authors = ["Michel Boucey <michel.boucey@gmail.com>"]
 license = "BSD-3-Clause"

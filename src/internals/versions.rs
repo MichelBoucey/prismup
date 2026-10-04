@@ -94,7 +94,12 @@ pub fn expected_sha256_for(
                 .iter()
                 .find(|asset| asset.name == archive_filename)
         })
-        .and_then(|asset| expected_sha256_from_digest(&asset.digest))
+        .and_then(|asset| {
+            asset
+                .digest
+                .as_deref()
+                .and_then(expected_sha256_from_digest)
+        })
 }
 
 #[cfg(test)]
@@ -225,6 +230,20 @@ mod tests {
         );
         assert_eq!(
             expected_sha256_for(&releases, &mac_platform(), &Version::new(0, 2, 0)),
+            None
+        );
+    }
+
+    #[test]
+    fn expected_sha256_for_is_none_for_an_asset_without_digest() {
+        let releases: Vec<Release> = serde_json::from_str(
+            r#"[{ "tag_name": "v0.23.0", "assets": [
+                { "name": "prism-0.23.0-x86_64-unknown-linux-gnu.tar.gz", "digest": null }
+            ]}]"#,
+        )
+        .expect("a Github release without any digest should be parsed");
+        assert_eq!(
+            expected_sha256_for(&releases, &linux_platform(), &Version::new(0, 23, 0)),
             None
         );
     }
