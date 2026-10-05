@@ -38,6 +38,8 @@ At its first run, `PrismUp` installs `Prism` in its latest version.
 user@box $ prismup
 No Prism compiler installed yet.
 Installation of the latest Prism compiler (0.22.0).
+Downloaded prism-0.22.0-x86_64-unknown-linux-gnu.tar.gz (31.1 MB).
+Set Prism version 0.22.0 as your current Prism compiler.
 Please add '$HOME/.prismup/bin/' to your PATH.
 ```
 
