@@ -166,3 +166,15 @@ Removing the prismup binary at '/home/account/.cargo/bin/prismup'...
 You can remove '$HOME/.prismup/bin/' from your PATH.
 ```
 
+## 10. AI agent skill
+
+`PrismUp` ships an AI agent skill in the
+[`prismup-skill/`](prismup-skill) directory. It bundles a `SKILL.md` file
+describing how an agent should install and manage `Prism` versions with
+`PrismUp`, together with its own
+[`BSD 3-Clause`](prismup-skill/LICENSE) license. The skill is licensed under the
+same terms as `PrismUp`.
+
+## 11. License
+
+`prismup` is released under the `BSD 3-Clause` license. Copyright (c) 2026, Michel Boucey.
