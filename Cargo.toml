@@ -10,6 +10,7 @@ homepage = "https://github.com/MichelBoucey/prismup"
 repository = "https://github.com/MichelBoucey/prismup"
 readme = "README.md"
 keywords = ["prism", "language", "cli"]
+rust-version = "1.88.0"
 
 [dependencies]
 semver = "1.0.28"
